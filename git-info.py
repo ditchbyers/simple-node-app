@@ -93,6 +93,9 @@ def count_lines_of_code(repo_path):
 def main():
     git_info = get_git_info(repo_path)
     npm_info = run_npm_ls()
+
+    print(json.dumps(npm_info, indent=4))
+
     lines_of_code_info = count_lines_of_code(repo_path)
 
     # Combine all information into a single JSON
@@ -104,8 +107,6 @@ def main():
 
     # Output the JSON
     output_json = json.dumps(combined_info, indent=4)
-    print(output_json)
-
 # Run the main function
 if __name__ == "__main__":
     main()
