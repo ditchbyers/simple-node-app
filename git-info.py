@@ -46,7 +46,6 @@ def get_git_info(repo_path):
 # Run npm audit and capture dependencies information
 def run_npm_ls():
     try:
-        os.system("npm -v")
         os.system("npm install")
 
         result = subprocess.run(
@@ -76,6 +75,9 @@ def count_lines_of_code(repo_path):
         if 'node_modules' in dirs:
             dirs.remove('node_modules')  # This will exclude 'node_modules' from being walked
 
+        if '.venv' in dirs:
+            dirs.remove('.venv')
+            
         if 'node_modules' in dirs:
             dirs.remove('node_modules')  # This will exclude 'node_modules' from being walked
 
