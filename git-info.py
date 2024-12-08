@@ -46,6 +46,8 @@ def get_git_info(repo_path):
 # Run npm audit and capture dependencies information
 def run_npm_ls():
     try:
+        os.system("npm -v")
+
         test1 = subprocess.run(
             ["/usr/bin/npm", "-v"],
             text=True,
