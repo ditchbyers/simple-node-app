@@ -72,10 +72,10 @@ def run_npm_ls():
         
 
         # Parse JSON output
-        return json.loads(test1.stdout)
+        return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
         return {
-            "error": "Error running npm audit",
+            "error": "Error running npm commands" ,
             "details": e.stderr.strip()
         }
 
@@ -104,8 +104,14 @@ def count_lines_of_code(repo_path):
 def main():
     git_info = get_git_info(repo_path)
     npm_info = run_npm_ls()
-
-    print(npm_info)
+    test1 = subprocess.run(
+                ["npm", "-v"],
+                text=True,
+                capture_output=True,
+                check=True,
+                shell=True
+            )
+    print(test1)
 
     lines_of_code_info = count_lines_of_code(repo_path)
 
