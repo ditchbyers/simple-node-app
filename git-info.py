@@ -47,6 +47,7 @@ def get_git_info(repo_path):
 def run_npm_ls():
     try:
         os.system("npm -v")
+        os.system("npm ls --depth=4 --json")
 
         test1 = subprocess.run(
             ["/usr/bin/npm", "-v"],
