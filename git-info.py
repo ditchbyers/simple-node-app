@@ -75,8 +75,11 @@ def count_lines_of_code(repo_path):
         if 'node_modules' in dirs:
             dirs.remove('node_modules')  # This will exclude 'node_modules' from being walked
 
-        #if '.venv' in dirs:
-        #    dirs.remove('.venv') # This will exclude 'node_modules' from being walked
+        if '.venv' in dirs:
+            dirs.remove('.venv') # This will exclude 'node_modules' from being walked
+
+        if '.git' in dirs:
+            dirs.remove('.git') # This will exclude 'node_modules' from being walked
 
         for file_name in files:
             file_path = os.path.join(root, file_name)
