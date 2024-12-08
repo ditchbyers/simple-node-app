@@ -6,7 +6,7 @@ from pymongo import MongoClient
 
 # Get the path of the repository (working directory where Jenkins is running)
 repo_path = os.getenv("WORKSPACE", ".")
-
+print("Current PATH:", os.environ["PATH"])
 # Get Git information in a safe method with try-except
 def get_git_info(repo_path):
     try:
