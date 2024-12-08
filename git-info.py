@@ -6,7 +6,7 @@ from pymongo import MongoClient
 
 # Get the path of the repository (working directory where Jenkins is running)
 repo_path = os.getenv("WORKSPACE", ".")
-print("Current PATH:", os.environ["PATH"])
+
 # Get Git information in a safe method with try-except
 def get_git_info(repo_path):
     try:
@@ -47,7 +47,7 @@ def get_git_info(repo_path):
 def run_npm_ls():
     try:
         test1 = subprocess.run(
-            ["npm", "-v"],
+            ["/usr/bin/npm", "-v"],
             text=True,
             capture_output=True,
             check=True,
@@ -55,7 +55,7 @@ def run_npm_ls():
         )
         print(test1.stdout)
         test2 = subprocess.run(
-            ["npm", "install"],
+            ["/usr/bin/npm", "install"],
             text=True,
             capture_output=True,
             check=True,
@@ -63,7 +63,7 @@ def run_npm_ls():
         )
         print(test2.stdout)
         result = subprocess.run(
-            ["npm", "ls", "--depth=4", "--json"],
+            ["/usr/bin/npm", "ls", "--depth=4", "--json"],
             text=True,
             capture_output=True,
             check=True,
