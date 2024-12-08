@@ -47,24 +47,8 @@ def get_git_info(repo_path):
 def run_npm_ls():
     try:
         os.system("npm -v")
-        os.system("npm ls --depth=4 --json")
+        os.system("npm install")
 
-        test1 = subprocess.run(
-            ["/usr/bin/npm", "-v"],
-            text=True,
-            capture_output=True,
-            check=True,
-            shell=True
-        )
-        print(test1.stdout)
-        test2 = subprocess.run(
-            ["/usr/bin/npm", "install"],
-            text=True,
-            capture_output=True,
-            check=True,
-            shell=True
-        )
-        print(test2.stdout)
         result = subprocess.run(
             ["/usr/bin/npm", "ls", "--depth=4", "--json"],
             text=True,
