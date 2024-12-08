@@ -54,6 +54,7 @@ def run_npm_ls():
             text=True,
             capture_output=True,
             check=True,
+            # shell=True
         )
         
 
@@ -65,26 +66,29 @@ def run_npm_ls():
             "details": e.stderr.strip()
         }
 
-# Count total lines of code in each file
 def count_lines_of_code(repo_path):
-    loc_info = {}
-    try:
-        for root, _, files in os.walk(repo_path):
-            for file in files:
-                file_path = os.path.join(root, file)
+    # List to store the number of lines in each file
+    lines_of_code_info = {}
+
+    # Walk through the repo directory
+    for root, dirs, files in os.walk(repo_path):
+        # Skip node_modules or any other directories you want to ignore
+        if 'node_modules' in dirs:
+            dirs.remove('node_modules')  # This will exclude 'node_modules' from being walked
+
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            
+            # Only count lines for source code files (e.g., .js, .py, etc.)
+            if file_name.endswith(('.js', '.py', '.html', '.css', '.ts')):  # Add more extensions as needed
                 try:
-                    # Only count lines for text-based files
                     with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                        loc_info[file_path] = sum(1 for _ in f)
+                        lines = f.readlines()
+                        lines_of_code_info[file_path] = len(lines)
                 except Exception as e:
-                    # Handle any errors (e.g., binary files)
-                    loc_info[file_path] = f"Error reading file: {str(e)}"
-        return loc_info
-    except Exception as e:
-        return {
-            "error": "Error counting lines of code",
-            "details": str(e)
-        }
+                    print(f"Could not read file {file_path}: {e}")
+    
+    return lines_of_code_info
 
 # Main Execution
 def main():
