@@ -46,13 +46,22 @@ def get_git_info(repo_path):
 # Run npm audit and capture dependencies information
 def run_npm_ls():
     try:
-        result = subprocess.run(
+        test1 = subprocess.run(
+            ["npm", "-v"],
+            text=True,
+            capture_output=True,
+            check=True,
+            shell=True
+        )
+        print(test1.stdout)
+        test2 = subprocess.run(
             ["npm", "install"],
             text=True,
             capture_output=True,
             check=True,
             shell=True
         )
+        print(test2.stdout)
         result = subprocess.run(
             ["npm", "ls", "--depth=4", "--json"],
             text=True,
@@ -60,8 +69,10 @@ def run_npm_ls():
             check=True,
             shell=True
         )
+        
+
         # Parse JSON output
-        return json.loads(result.stdout)
+        return json.loads(test1.stdout)
     except subprocess.CalledProcessError as e:
         return {
             "error": "Error running npm audit",
@@ -94,7 +105,7 @@ def main():
     git_info = get_git_info(repo_path)
     npm_info = run_npm_ls()
 
-    print(json.dumps(npm_info, indent=4))
+    print(npm_info)
 
     lines_of_code_info = count_lines_of_code(repo_path)
 
