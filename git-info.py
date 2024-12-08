@@ -54,7 +54,6 @@ def run_npm_ls():
             text=True,
             capture_output=True,
             check=True,
-            shell=True
         )
         
 
