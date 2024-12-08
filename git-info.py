@@ -47,6 +47,13 @@ def get_git_info(repo_path):
 def run_npm_ls():
     try:
         result = subprocess.run(
+            ["npm", "install"],
+            text=True,
+            capture_output=True,
+            check=True,
+            shell=True
+        )
+        result = subprocess.run(
             ["npm", "ls", "--depth=4", "--json"],
             text=True,
             capture_output=True,
