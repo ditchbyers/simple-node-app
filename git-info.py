@@ -82,13 +82,12 @@ def count_lines_of_code(repo_path):
             file_path = os.path.join(root, file_name)
             
             # Only count lines for source code files (e.g., .js, .py, etc.)
-            if file_name.endswith(('.js', '.py', '.html', '.css', '.ts')):  # Add more extensions as needed
-                try:
-                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                        lines = f.readlines()
-                        lines_of_code_info[file_path] = len(lines)
-                except Exception as e:
-                    print(f"Could not read file {file_path}: {e}")
+            try:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                    lines = f.readlines()
+                    lines_of_code_info[file_path] = len(lines)
+            except Exception as e:
+                print(f"Could not read file {file_path}: {e}")
     
     return lines_of_code_info
 
