@@ -119,6 +119,7 @@ def main():
 
     # Output the JSON
     output_json = json.dumps(combined_info, indent=4)
+    print(output_json)
 # Run the main function
 if __name__ == "__main__":
     main()
