@@ -96,13 +96,13 @@ def count_lines_of_code(repo_path):
 
 def save_json_to_db(json_data):
     with MongoClient('mongodb://admin:pass@mongodb:27017/') as client:
-          db = client['jenkins-data']
+        db = client['jenkins']
 
-          collection = db["pipeline_data"]
+        collection = db["pipeline_data"]
 
-          result = collection.insert_many(json_data)
+        result = collection.insert_many(json_data)
 
-          print(f"Inserted {len(result.inserted_ids)} documents into 'users' collection.")
+        print(f"Inserted {len(result.inserted_ids)} documents into 'users' collection.")
 
 # Main Execution
 def main():

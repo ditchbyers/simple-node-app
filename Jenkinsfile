@@ -12,7 +12,7 @@ pipeline {
             steps {
                 script {
                     // Run the Python script to get commit info
-                    def output = sh(script: '. .venv/bin/activate && python3 git-info.py', returnStdout: true).trim()
+                    def output = sh(script: '. /opt/venv/bin/activate && python3 git-info.py', returnStdout: true).trim()
                     echo "Output: ${output}}"
                 }
             }
