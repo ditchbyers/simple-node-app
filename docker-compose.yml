@@ -1,38 +1,68 @@
-version: "3.7"
-
 services:
-  db:
-    container_name: mongo-dev
-    image: mongo:latest
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_DATABASE=auth
-      - MONGO_INITDB_ROOT_PASSWORD=pass
-    networks:
-      - mongo-compose-network
+  jenkins:
+    image: jenkins/jenkins:latest
+    container_name: jenkins
+    user: root
+    restart: on-failure
     ports:
-      - '27017:27017'
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+    networks:
+      - jenkins_network
+    init: true
+    command: >
+      sh -c "apt-get update &&
+             apt-get install -y python3 python3-pip curl gnupg python3-venv &&
+             curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &&
+             apt-get install -y nodejs &&
+             npm install -g npm@latest &&
+             python3 -m venv /opt/venv &&
+             . /opt/venv/bin/activate &&
+             pip install --upgrade pip &&
+             pip install gitpython pymongo &&
+             /usr/local/bin/jenkins.sh"
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - jenkins_network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: pass
     volumes:
       - ./data:/data/db
 
   mongo-express:
+    image: mongo-express:latest
     container_name: mongo-express
-    image: mongo-express
-    depends_on:
-      - db
-    networks:
-      - mongo-compose-network
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo-dev
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
-      - ME_CONFIG_BASICAUTH_USERNAME=admin
-      - ME_CONFIG_BASICAUTH_PASSWORD=tribes
     ports:
-      - '8081:8081'
+      - "8081:8081"
+    networks:
+      - jenkins_network
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: pass
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: tribes
     volumes:
       - ./data:/data/db
 
+volumes:
+  jenkins_home:
+  jenkins-docker-certs:
+  mongo_data:
+
 networks:
-  mongo-compose-network:
+  jenkins_network:
     driver: bridge
