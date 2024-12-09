@@ -94,23 +94,37 @@ def count_lines_of_code(repo_path):
     
     return lines_of_code_info
 
+def save_json_to_db(json_data):
+    with MongoClient('mongodb://admin:pass@localhost:27017/') as client:
+          db = client["jenkins-data"]
+
+          collection = db["pipeline_data"]
+
+          result = collection.insert_many(json_data)
+
+          print(f"Inserted {len(result.inserted_ids)} documents into 'users' collection.")
+
 # Main Execution
 def main():
+    print("Create commit information")
     git_info = get_git_info(repo_path)
+    
+    print("Create dependencies information")
     npm_info = run_npm_ls()
 
+    print("Create LOC information")
     lines_of_code_info = count_lines_of_code(repo_path)
 
-    # Combine all information into a single JSON
-    combined_info = {
+    print("Combine all information into one JSON")
+    combined_info = [{
         "commit_info": git_info,
         "npm_info": npm_info,
         "lines_of_code": lines_of_code_info
-    }
+    }]
 
-    # Output the JSON
-    output_json = json.dumps(combined_info, indent=4)
-    print(output_json)
+    print("Save combined json to database")
+    save_json_to_db(combined_info)
+
 # Run the main function
 if __name__ == "__main__":
     main()
