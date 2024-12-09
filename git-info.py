@@ -106,9 +106,10 @@ def save_json_to_db(json_data):
 
 # Main Execution
 def main():
+  try:
     print("Create commit information")
     git_info = get_git_info(repo_path)
-    
+
     print("Create dependencies information")
     npm_info = run_npm_ls()
 
@@ -122,8 +123,13 @@ def main():
         "lines_of_code": lines_of_code_info
     }]
 
-    print("Save combined json to database")
+    print("Save combined JSON to database")
     save_json_to_db(combined_info)
+  except Exception as e:
+    print("An error occurred during execution:")
+    print(f"Error type: {type(e).__name__}")
+    print(f"Error message: {str(e)}")
+    raise
 
 # Run the main function
 if __name__ == "__main__":
