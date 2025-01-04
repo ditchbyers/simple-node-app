@@ -49,7 +49,7 @@ def run_npm_ls():
         os.system("npm install")
 
         result = subprocess.run(
-            ["npm", "ls", "--depth=4", "--json"],
+            ["npm", "ls", "--depth=Infinity", "--json"],
             text=True,
             capture_output=True,
             check=True,
