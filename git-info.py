@@ -95,7 +95,7 @@ def count_lines_of_code(repo_path):
     return lines_of_code_info
 
 def save_json_to_db(json_data):
-    with MongoClient('mongodb://admin:pass@mongodb:27017/') as client:
+    with MongoClient('mongodb+srv://maypascalrene:sxOqwvX2LR0ZVG0u@pipelinedata.zndno.mongodb.net/?retryWrites=true&w=majority&appName=pipelineData') as client:
         db = client['jenkins']
 
         collection = db["pipeline_data"]
