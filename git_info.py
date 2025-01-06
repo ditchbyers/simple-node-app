@@ -49,16 +49,20 @@ def get_npm_info(commit):
     try:
         # Delete Node Modules folder
         if os.path.exists("node_modules"):
+            # Windows
             os.system(r'rmdir /s /q "node_modules"')
+            # Linux
+            os.system(r'rm -rf "node_modules"')
 
         # Delete package-lock
         if os.path.exists("package-lock.json"):
+            # Windows
             os.system(r'del "package-lock.json"')
+            # Linux
+            os.system(r'rm "package-lock.json"')
 
         # Install all dependencies
         os.system(r'npm install --silent')
-        # os.system(r'npm audit fix --force --silent')
-
 
         # Create list of all dependencies no matter the depth
         result = subprocess.run(
@@ -78,6 +82,36 @@ def get_npm_info(commit):
         print(f"Output: {e.output}")
         print(f"Error: {e.stderr}")
 
+
+def count_lines_of_code(repo_path):
+    # List to store the number of lines in each file
+    lines_of_code_info = {}
+
+    # Walk through the repo directory
+    for root, dirs, files in os.walk(repo_path):
+        # Skip node_modules or any other directories you want to ignore
+        if 'node_modules' in dirs:
+            dirs.remove('node_modules')  # This will exclude 'node_modules' from being walked
+
+        if '.venv' in dirs:
+            dirs.remove('.venv')  # This will exclude '.venv' from being walked
+
+        if '.git' in dirs:
+            dirs.remove('.git')  # This will exclude '.git' from being walked
+
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+
+            # Only count lines for source code files (e.g., .js, .py, etc.)
+            try:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                    lines = f.readlines()
+                    lines_of_code_info[file_path] = len(lines)
+            except Exception as e:
+                print(f"Could not read file {file_path}: {e}")
+
+    return lines_of_code_info
+
 def main():
     try:
         # Open the repository
@@ -88,6 +122,7 @@ def main():
         # Get the last commit hash from the database
         last_commit_hash = get_last_commit_hash()
         last_commit_hash = None
+        npm_info = {}
 
         if last_commit_hash:
             print(f"\tLast commit hash in database: {last_commit_hash}")
@@ -99,12 +134,15 @@ def main():
 
         print(f"\tFound {len(commits)} commits to process.", end="\n\n")
         for commit in reversed(commits):
-            print(f"Processing commit: {commit.hexsha}")
+            # Checkout Commit
             repo.git.checkout(commit.hexsha)
+            print(f"Processing commit: {commit.hexsha}")
 
+            # Get Commit Information
             git_info = get_git_info(commit)
             print(f"Git Info: {git_info}", end="\n\n")
 
+            # Check for Dependency Changes
             print(f"Checking for package.json changes...")
             npm_change = npm_changes(commit)
             print(f"NPM Changed: {npm_change}", end="\n\n")
@@ -114,6 +152,15 @@ def main():
                 npm_info = get_npm_info(commit)
                 print(f"NPM Info: {npm_info}", end="\n\n")
 
+            lines_of_code_info = count_lines_of_code(repo_path)
+            print(f"Lines of Code Info: {lines_of_code_info}", end="\n\n")
+
+            combined_info = [{
+                "commit_info": git_info,
+                "npm_info": npm_info,
+                "lines_of_code": lines_of_code_info
+            }]
+            print(f"Combined Info: {combined_info}", end="\n\n")
 
 
     except Exception as e:
