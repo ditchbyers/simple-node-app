@@ -162,7 +162,7 @@ def main():
             }]
             print(f"Combined Info: {combined_info}", end="\n\n")
 
-            repo.git.checkout("main")
+        repo.git.checkout("main")
 
     except Exception as e:
         print("An error occurred during execution:")
