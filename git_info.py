@@ -59,6 +59,7 @@ def get_npm_info(commit):
         os.system(r'npm install --silent')
         os.system(r'npm audit fix --force --silent')
 
+
         # Create list of all dependencies no matter the depth
         result = subprocess.run(
             ["npm", "ls", "--depth=Infinity", "--json"],
