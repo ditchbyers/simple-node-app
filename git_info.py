@@ -52,14 +52,14 @@ def get_npm_info(commit):
             # Windows
             os.system(r'rmdir /s /q "node_modules"')
             # Linux
-            os.system(r'rm -rf "node_modules"')
+            # os.system(r'rm -rf "node_modules"')
 
         # Delete package-lock
         if os.path.exists("package-lock.json"):
             # Windows
             os.system(r'del "package-lock.json"')
             # Linux
-            os.system(r'rm "package-lock.json"')
+            # os.system(r'rm "package-lock.json"')
 
         # Install all dependencies
         os.system(r'npm install --silent')
@@ -99,6 +99,9 @@ def count_lines_of_code(repo_path):
         if '.git' in dirs:
             dirs.remove('.git')  # This will exclude '.git' from being walked
 
+        if '.idea' in dirs:
+            dirs.remove('.idea') # this will exclude '.idea' from being walked
+
         for file_name in files:
             file_path = os.path.join(root, file_name)
 
@@ -111,6 +114,16 @@ def count_lines_of_code(repo_path):
                 print(f"Could not read file {file_path}: {e}")
 
     return lines_of_code_info
+
+def save_json_to_db(json_data):
+    with MongoClient('mongodb://admin:pass@mongodb:27017/') as client:
+        db = client['jenkins']
+
+        collection = db["pipeline_data"]
+
+        result = collection.insert_many(json_data)
+
+        print(f"Inserted {len(result.inserted_ids)} documents into 'users' collection.")
 
 def main():
     try:
