@@ -7,6 +7,21 @@ from pymongo import MongoClient
 # Get the path of the repository (working directory where Jenkins is running)
 repo_path = os.getenv("WORKSPACE", ".")
 
+# Get last commit_hash in database
+def get_last_commit_hash():
+    try:
+        with MongoClient('mongodb://admin:pass@mongodb:27017/') as client:
+            db = client['jenkins']
+            collection = db["pipeline_data"]
+
+            # Find the latest commit by sorting by commit date
+            latest_commit = collection.find_one(sort=[("commit_info.date", -1)])
+            return latest_commit["commit_info"]["commit_hash"] if latest_commit else None
+    except Exception as e:
+        print(f"Error retrieving last commit hash: {e}")
+        return None
+
+
 # Get Git information in a safe method with try-except
 def get_git_info(repo_path):
     try:
@@ -49,7 +64,7 @@ def run_npm_ls():
         os.system("npm install")
 
         result = subprocess.run(
-            ["npm", "ls", "--depth=4", "--json"],
+            ["npm", "ls", "--depth=Infinity", "--json"],
             text=True,
             capture_output=True,
             check=True,
