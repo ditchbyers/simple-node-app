@@ -67,6 +67,9 @@ def get_npm_info(commit):
             check=True,
             shell=True
         )
+
+        os.system(f'git reset --hard {commit}')
+
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
         print(f"Command: {e.cmd}")
