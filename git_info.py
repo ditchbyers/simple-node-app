@@ -56,7 +56,8 @@ def get_npm_info(commit):
             os.system(r'del "package-lock.json"')
 
         # Install all dependencies
-        os.system(r'npm install')
+        os.system(r'npm install --silent')
+        os.system(r'npm audit fix --force --silent')
 
         # Create list of all dependencies no matter the depth
         result = subprocess.run(
