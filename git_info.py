@@ -35,6 +35,8 @@ def get_git_info(commit):
             }
         }
 
+# NPM Dependency Check
+
 def npm_changes(commit):
     try:
         for file in commit.stats.files:
@@ -82,6 +84,40 @@ def get_npm_info(commit):
         print(f"Output: {e.output}")
         print(f"Error: {e.stderr}")
 
+def parse_dependencies(dependencies, path_prefix="", parent_name=None):
+    """
+    Parses the dependency tree and collects all dependencies along with their paths and details.
+    """
+    dependency_paths = {}
+    for dep_name, dep_info in dependencies.items():
+        current_path = f"{path_prefix}/{dep_name}" if path_prefix else dep_name
+        dep_details = {
+            "version": dep_info.get("version", "unknown"),
+            "resolved": dep_info.get("resolved", None),
+            "overridden": dep_info.get("overridden", False),
+            "paths": [current_path],
+            "parent": [parent_name] if parent_name else [],
+            "children": list(dep_info.get("dependencies", {}).keys())
+        }
+
+        if dep_name not in dependency_paths:
+            dependency_paths[dep_name] = dep_details
+        else:
+            dependency_paths[dep_name]["paths"].append(current_path)
+            if parent_name and parent_name not in dependency_paths[dep_name]["parent"]:
+                dependency_paths[dep_name]["parent"].append(parent_name)
+
+        if "dependencies" in dep_info:
+            child_dependencies = parse_dependencies(dep_info["dependencies"], current_path, dep_name)
+            for child_name, child_details in child_dependencies.items():
+                if child_name not in dependency_paths:
+                    dependency_paths[child_name] = child_details
+                else:
+                    dependency_paths[child_name]["paths"].extend(child_details["paths"])
+                    dependency_paths[child_name]["parent"] = list(set(dependency_paths[child_name]["parent"] + child_details["parent"]))
+    return dependency_paths
+
+# Check Lines of Code
 
 def count_lines_of_code(repo_path):
     # List to store the number of lines in each file
@@ -132,7 +168,6 @@ def main():
         print(f"Processing data for {repo.remotes.origin.url.split('.git')[0].split('/')[-1]}", end="\n\n")
 
         print("Checking for last commit hash in database...")
-        # Get the last commit hash from the database
         last_commit_hash = get_last_commit_hash()
         last_commit_hash = None
         npm_info = {}
@@ -147,15 +182,12 @@ def main():
 
         print(f"\tFound {len(commits)} commits to process.", end="\n\n")
         for commit in reversed(commits):
-            # Checkout Commit
             repo.git.checkout(commit.hexsha)
             print(f"Processing commit: {commit.hexsha}")
 
-            # Get Commit Information
             git_info = get_git_info(commit)
             print(f"Git Info: {git_info}", end="\n\n")
 
-            # Check for Dependency Changes
             print(f"Checking for package.json changes...")
             npm_change = npm_changes(commit)
             print(f"NPM Changed: {npm_change}", end="\n\n")
@@ -163,7 +195,13 @@ def main():
             if npm_change:
                 print(f"Processing package.json changes...")
                 npm_info = get_npm_info(commit)
-                print(f"NPM Info: {npm_info}", end="\n\n")
+                print(f"Original NPM Info: {npm_info}", end="\n\n")
+
+                # Parse the dependencies
+                parsed_dependencies = parse_dependencies(npm_info.get("dependencies", {}))
+                print(f"Parsed Dependencies: {parsed_dependencies}", end="\n\n")
+
+                npm_info["parsed_dependencies"] = parsed_dependencies
 
             lines_of_code_info = count_lines_of_code(repo_path)
             print(f"Lines of Code Info: {lines_of_code_info}", end="\n\n")
@@ -173,8 +211,11 @@ def main():
                 "npm_info": npm_info,
                 "lines_of_code": lines_of_code_info
             }]
-            save_json_to_db(combined_info)
-            print(f"Saved Info: {combined_info}", end="\n\n")
+
+            print(json.dumps(combined_info, indent=2))
+            print("\n----\n")
+            # save_json_to_db(combined_info)
+            # print(f"Saved Info: {combined_info}", end="\n\n")
 
         repo.git.checkout("main")
 
