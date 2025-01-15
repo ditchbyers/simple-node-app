@@ -84,11 +84,24 @@ def get_npm_info(commit):
         print(f"Output: {e.output}")
         print(f"Error: {e.stderr}")
 
-def parse_dependencies(dependencies, path_prefix="", parent_name=None):
+def parse_dependencies(dependencies, path_prefix="", parent_name=None, layer=0):
     """
-    Parses the dependency tree and collects all dependencies along with their paths and details.
+    Parses the dependency tree and collects all dependencies along with their paths, details, and layer information.
+
+    Args:
+        dependencies (dict): The dependency tree to parse.
+        path_prefix (str): The path to the current node in the dependency tree.
+        parent_name (str): The parent dependency name.
+        layer (int): The current layer of the dependency.
+
+    Returns:
+        tuple: A tuple containing:
+            - dict: A flat dictionary with dependency names as keys and their paths and details as values.
+            - dict: A dictionary with first-layer dependencies and their detailed information including child layer counts.
     """
     dependency_paths = {}
+    first_layer_dependencies = {}
+
     for dep_name, dep_info in dependencies.items():
         current_path = f"{path_prefix}/{dep_name}" if path_prefix else dep_name
         dep_details = {
@@ -97,8 +110,28 @@ def parse_dependencies(dependencies, path_prefix="", parent_name=None):
             "overridden": dep_info.get("overridden", False),
             "paths": [current_path],
             "parent": [parent_name] if parent_name else [],
-            "children": list(dep_info.get("dependencies", {}).keys())
+            "children": list(dep_info.get("dependencies", {}).keys()),
+            "layer": layer
         }
+
+        if layer == 0:
+            # Initialize layer counts for first-layer dependencies
+            dep_details["layer_counts"] = {}
+
+            def count_children(dep_tree, dimension=1):
+                if not dep_tree:
+                    return
+                if dimension not in dep_details["layer_counts"]:
+                    dep_details["layer_counts"][dimension] = 0
+
+                for child_name, child_info in dep_tree.items():
+                    dep_details["layer_counts"][dimension] += 1
+                    if "dependencies" in child_info:
+                        count_children(child_info["dependencies"], dimension + 1)
+
+            count_children(dep_info.get("dependencies", {}))
+
+            first_layer_dependencies[dep_name] = dep_details
 
         if dep_name not in dependency_paths:
             dependency_paths[dep_name] = dep_details
@@ -108,14 +141,15 @@ def parse_dependencies(dependencies, path_prefix="", parent_name=None):
                 dependency_paths[dep_name]["parent"].append(parent_name)
 
         if "dependencies" in dep_info:
-            child_dependencies = parse_dependencies(dep_info["dependencies"], current_path, dep_name)
+            child_dependencies, _ = parse_dependencies(dep_info["dependencies"], current_path, dep_name, layer + 1)
             for child_name, child_details in child_dependencies.items():
                 if child_name not in dependency_paths:
                     dependency_paths[child_name] = child_details
                 else:
                     dependency_paths[child_name]["paths"].extend(child_details["paths"])
                     dependency_paths[child_name]["parent"] = list(set(dependency_paths[child_name]["parent"] + child_details["parent"]))
-    return dependency_paths
+
+    return dependency_paths, first_layer_dependencies
 
 # Check Lines of Code
 
@@ -195,13 +229,15 @@ def main():
             if npm_change:
                 print(f"Processing package.json changes...")
                 npm_info = get_npm_info(commit)
+                dependencies = npm_info.get("dependencies", {})
                 print(f"Original NPM Info: {npm_info}", end="\n\n")
 
                 # Parse the dependencies
-                parsed_dependencies = parse_dependencies(npm_info.get("dependencies", {}))
+                parsed_dependencies, first_layer_dependencies = parse_dependencies(dependencies)
                 print(f"Parsed Dependencies: {parsed_dependencies}", end="\n\n")
 
-                npm_info["parsed_dependencies"] = parsed_dependencies
+                npm_info["dependencies"] = parsed_dependencies
+                npm_info["first_layer_dependencies"] = first_layer_dependencies
 
             lines_of_code_info = count_lines_of_code(repo_path)
             print(f"Lines of Code Info: {lines_of_code_info}", end="\n\n")
