@@ -212,10 +212,8 @@ def main():
                 "lines_of_code": lines_of_code_info
             }]
 
-            print(json.dumps(combined_info, indent=2))
-            print("\n----\n")
-            # save_json_to_db(combined_info)
-            # print(f"Saved Info: {combined_info}", end="\n\n")
+            save_json_to_db(combined_info)
+            print(f"Saved Info: {combined_info}", end="\n\n")
 
         repo.git.checkout("main")
 
