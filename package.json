@@ -9,7 +9,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-scripts": "latest",
-    "typescript": "latest"
+    "typescript": "^5.7.3"
   },
   "scripts": {
     "start": "react-scripts start",
