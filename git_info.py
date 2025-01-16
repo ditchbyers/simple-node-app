@@ -64,7 +64,7 @@ def get_npm_info(commit):
             # os.system(r'rm "package-lock.json"')
 
         # Install all dependencies
-        os.system(r'npm install --legacy-peer-deps')
+        os.system(r'npm install')
 
         # Create list of all dependencies no matter the depth
         result = subprocess.run(
