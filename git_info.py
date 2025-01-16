@@ -121,11 +121,12 @@ def parse_dependencies(dependencies, path_prefix="", parent_name=None, layer=0):
             def count_children(dep_tree, dimension=1):
                 if not dep_tree:
                     return
-                if dimension not in dep_details["layer_counts"]:
-                    dep_details["layer_counts"][dimension] = 0
+                str_dimension = str(dimension)  # Convert dimension to string
+                if str_dimension not in dep_details["layer_counts"]:
+                    dep_details["layer_counts"][str_dimension] = 0
 
                 for child_name, child_info in dep_tree.items():
-                    dep_details["layer_counts"][dimension] += 1
+                    dep_details["layer_counts"][str_dimension] += 1
                     if "dependencies" in child_info:
                         count_children(child_info["dependencies"], dimension + 1)
 
@@ -150,6 +151,7 @@ def parse_dependencies(dependencies, path_prefix="", parent_name=None, layer=0):
                     dependency_paths[child_name]["parent"] = list(set(dependency_paths[child_name]["parent"] + child_details["parent"]))
 
     return dependency_paths, first_layer_dependencies
+
 
 # Check Lines of Code
 
