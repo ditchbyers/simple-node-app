@@ -16,7 +16,7 @@ def get_last_commit_hash():
             collection = db["pipeline_data"]
 
             # Find the latest commit by sorting by commit date
-            latest_commit = collection.find_one(sort=[("_id", pymongo.ASCENDING)], limit=1)["commit_info"]["commit_hash"]
+            latest_commit = collection.find_one(sort=[("_id", pymongo.DESCENDING)], limit=1)["commit_info"]["commit_hash"]
             return latest_commit
     except Exception as e:
         print(f"Error retrieving last commit hash: {e}")
@@ -205,7 +205,7 @@ def main():
 
         print("Checking for last commit hash in database...")
         last_commit_hash = get_last_commit_hash()
-        last_commit_hash = None
+        # last_commit_hash = None
         npm_info = {}
 
         if last_commit_hash:
