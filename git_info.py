@@ -216,6 +216,8 @@ def main():
             print("\tNo previous commit found in database. \n\tLoading all commits from repository.")
             commits = list(repo.iter_commits("HEAD"))
 
+        first_iteration = True
+
         print(f"\tFound {len(commits)} commits to process.", end="\n\n")
         for commit in reversed(commits):
             repo.git.checkout(commit.hexsha)
@@ -228,7 +230,7 @@ def main():
             npm_change = npm_changes(commit)
             print(f"NPM Changed: {npm_change}", end="\n\n")
 
-            if npm_change:
+            if first_iteration or npm_change:
                 print(f"Processing package.json changes...")
                 npm_info = get_npm_info(commit)
                 dependencies = npm_info.get("dependencies", {})
@@ -240,6 +242,8 @@ def main():
 
                 npm_info["dependencies"] = parsed_dependencies
                 npm_info["first_layer_dependencies"] = first_layer_dependencies
+
+            first_iteration = False
 
             lines_of_code_info = count_lines_of_code(repo_path)
             print(f"Lines of Code Info: {lines_of_code_info}", end="\n\n")
